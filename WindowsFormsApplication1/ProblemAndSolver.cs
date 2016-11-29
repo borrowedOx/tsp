@@ -482,7 +482,7 @@ namespace TSP
 
                     for (int k = 0; k < Cities.Length; k++)
                     {
-                        if ((int)current.City_list[current.City_list.Count - 1] != k && !current.City_list.Contains(k))
+                        if (!current.City_list.Contains(k))
                         {
                             matrix_and_bound child = matrix_reduction(current.Mb, (int)current.City_list[current.City_list.Count - 1], k);
 
@@ -645,88 +645,98 @@ namespace TSP
             double[,] matrix = (double[,])matrix_in.Matrix.Clone();
             //Array.Copy(matrix_in.Matrix, matrix, Cities.Length); 
             double lower_bound = matrix_in.Lower_bound;
-            lower_bound += matrix[from, to];
-            matrix[from, to] = double.PositiveInfinity;
 
-            //set row i and column k to infinity
-            for (int h = 0; h < Cities.Length; h++)
+            if (! double.IsPositiveInfinity(matrix[from, to]))
             {
-                matrix[from, h] = double.PositiveInfinity;
-                matrix[h, to] = double.PositiveInfinity;
-            }
+                lower_bound += matrix[from, to];
+                matrix[from, to] = double.PositiveInfinity;
 
-            //now need to reduce the matrix again
-            /*
-             *  Goes through all the rows and reduces them 
-             */
-            for (int i = 0; i < Cities.Length; i++)
-            {
-                double lowest = -1;
-                for (int k = 0; k < Cities.Length; k++)
+                //set row i and column k to infinity
+                for (int h = 0; h < Cities.Length; h++)
                 {
-                    if (!double.IsPositiveInfinity(matrix[i, k]))
-                    {
-                        if (lowest == -1)
-                        {
-                            lowest = matrix[i, k];
-                        }
-                        else if (lowest > matrix[i, k])
-                        {
-                            lowest = matrix[i, k];
-                        }
-                    }
-
+                    matrix[from, h] = double.PositiveInfinity;
+                    matrix[h, to] = double.PositiveInfinity;
                 }
-                if (lowest != -1)
+
+                //now need to reduce the matrix again
+                /*
+                 *  Goes through all the rows and reduces them 
+                 */
+                for (int i = 0; i < Cities.Length; i++)
                 {
-                    lower_bound += lowest;
-                    //now subtract each value by the lowest
+                    double lowest = -1;
                     for (int k = 0; k < Cities.Length; k++)
                     {
                         if (!double.IsPositiveInfinity(matrix[i, k]))
                         {
-                            matrix[i, k] = matrix[i, k] - lowest;
+                            if (lowest == -1)
+                            {
+                                lowest = matrix[i, k];
+                            }
+                            else if (lowest > matrix[i, k])
+                            {
+                                lowest = matrix[i, k];
+                            }
                         }
 
                     }
-                }
-            }
-
-            /*
-             *  Goes through all the columns and reduces them 
-             */
-            for (int i = 0; i < Cities.Length; i++)
-            {
-                double lowest = -1;
-                for (int k = 0; k < Cities.Length; k++)
-                {
-                    if (!double.IsPositiveInfinity(matrix[k, i]))
+                    if (lowest != -1)
                     {
-                        if (lowest == -1)
+                        lower_bound += lowest;
+                        //now subtract each value by the lowest
+                        for (int k = 0; k < Cities.Length; k++)
                         {
-                            lowest = matrix[k, i];
-                        }
-                        else if (lowest > matrix[k, i])
-                        {
-                            lowest = matrix[k, i];
+                            if (!double.IsPositiveInfinity(matrix[i, k]))
+                            {
+                                matrix[i, k] = matrix[i, k] - lowest;
+                            }
+
                         }
                     }
-
                 }
-                if (lowest != -1)
+
+                /*
+                 *  Goes through all the columns and reduces them 
+                 */
+                for (int i = 0; i < Cities.Length; i++)
                 {
-                    lower_bound += lowest;
-                    //now subtract each value by the lowest
+                    double lowest = -1;
                     for (int k = 0; k < Cities.Length; k++)
                     {
                         if (!double.IsPositiveInfinity(matrix[k, i]))
                         {
-                            matrix[k, i] = matrix[k, i] - lowest;
+                            if (lowest == -1)
+                            {
+                                lowest = matrix[k, i];
+                            }
+                            else if (lowest > matrix[k, i])
+                            {
+                                lowest = matrix[k, i];
+                            }
                         }
 
                     }
+                    if (lowest != -1)
+                    {
+                        lower_bound += lowest;
+                        //now subtract each value by the lowest
+                        for (int k = 0; k < Cities.Length; k++)
+                        {
+                            if (!double.IsPositiveInfinity(matrix[k, i]))
+                            {
+                                matrix[k, i] = matrix[k, i] - lowest;
+                            }
+
+                        }
+                    }
                 }
+
             }
+            else
+            {
+                lower_bound = double.PositiveInfinity;
+            }
+
 
 
             return new matrix_and_bound(matrix, lower_bound);
