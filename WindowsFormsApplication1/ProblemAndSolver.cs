@@ -395,7 +395,7 @@ namespace TSP
 
             //Here I run the greedy algorithm and use that BSSF result as my starting BSSF
             greedySolveProblem();
-             //Console.Out.WriteLine("Greedy BSSF: " + costOfBssf());
+            Console.Out.WriteLine("Greedy BSSF: " + costOfBssf());
 
             matrix_and_bound initial_matrix = construct_initial_matrix();
 
@@ -408,7 +408,7 @@ namespace TSP
                 }
                 Console.WriteLine();
             }*/
-            //Console.WriteLine(initial_matrix.Lower_bound);
+            Console.WriteLine(initial_matrix.Lower_bound);
             //Console.WriteLine();
 
 
@@ -451,7 +451,7 @@ namespace TSP
                             data.add_city_index(k);
 
                             data.set_priority();
-                            Console.Out.WriteLine("Set Priority " + data.Priority);
+                            //Console.Out.WriteLine("Set Priority " + data.Priority);
                             //I'm not sure this id is necessary but I'll have to see
                             data.Id = id;
 
@@ -505,19 +505,28 @@ namespace TSP
                                 data.add_city_index(k);
 
                                 data.set_priority();
-                                Console.Out.WriteLine("Set Priority " + data.Priority);
+                                //Console.Out.WriteLine("Set Priority " + data.Priority);
                                 //I'm not sure this id is necessary but I'll have to see
                                 data.Id = id;
                                 id++;
+
+                               // Console.Out.WriteLine("Intermediate Lower Bound " + data.Mb.Lower_bound);
 
                                 if (data.City_list.Count < Cities.Length)
                                 {
                                     queue.insert(data, id);
                                     
                                 }
-                                else //it's a leaf node and it's less than the current BSSF
+                                else if (data.Mb.Lower_bound < costOfBssf())//it's a leaf node and it's less than the current BSSF
                                 {
+                                    Console.Out.WriteLine("Current Lower Bound " + costOfBssf());
                                     Console.Out.WriteLine("Final Lower Bound " + data.Mb.Lower_bound);
+                                    /*for (int j = 0; j < data.City_list.Count; j++)
+                                    {
+                                        Console.Out.WriteLine(data.City_list[j]);
+                                    }*/
+
+                                    
                                     bssf = new TSPSolution(data.Path);
                                     count++;
                                 }
@@ -668,15 +677,18 @@ namespace TSP
                     }
 
                 }
-                lower_bound += lowest;
-                //now subtract each value by the lowest
-                for (int k = 0; k < Cities.Length; k++)
+                if (lowest != -1)
                 {
-                    if (!double.IsPositiveInfinity(matrix[i, k]))
+                    lower_bound += lowest;
+                    //now subtract each value by the lowest
+                    for (int k = 0; k < Cities.Length; k++)
                     {
-                        matrix[i, k] = matrix[i, k] - lowest;
-                    }
+                        if (!double.IsPositiveInfinity(matrix[i, k]))
+                        {
+                            matrix[i, k] = matrix[i, k] - lowest;
+                        }
 
+                    }
                 }
             }
 
@@ -701,15 +713,18 @@ namespace TSP
                     }
 
                 }
-                lower_bound += lowest;
-                //now subtract each value by the lowest
-                for (int k = 0; k < Cities.Length; k++)
+                if (lowest != -1)
                 {
-                    if (!double.IsPositiveInfinity(matrix[k, i]))
+                    lower_bound += lowest;
+                    //now subtract each value by the lowest
+                    for (int k = 0; k < Cities.Length; k++)
                     {
-                        matrix[k, i] = matrix[k, i] - lowest;
-                    }
+                        if (!double.IsPositiveInfinity(matrix[k, i]))
+                        {
+                            matrix[k, i] = matrix[k, i] - lowest;
+                        }
 
+                    }
                 }
             }
 
