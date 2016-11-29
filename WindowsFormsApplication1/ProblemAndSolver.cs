@@ -505,7 +505,7 @@ namespace TSP
                                 data.add_city_index(k);
 
                                 data.set_priority();
-                                //Console.Out.WriteLine("Set Priority " + data.Priority);
+                                Console.Out.WriteLine("Set Priority " + data.Priority);
                                 //I'm not sure this id is necessary but I'll have to see
                                 data.Id = id;
                                 id++;
@@ -517,6 +517,7 @@ namespace TSP
                                 }
                                 else //it's a leaf node and it's less than the current BSSF
                                 {
+                                    Console.Out.WriteLine("Final Lower Bound " + data.Mb.Lower_bound);
                                     bssf = new TSPSolution(data.Path);
                                     count++;
                                 }
