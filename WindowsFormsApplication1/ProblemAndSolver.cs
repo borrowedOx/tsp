@@ -385,11 +385,13 @@ namespace TSP
             results[TIME] = "-1";
             results[COUNT] = "-1";
 
+            int count = 0;
+
             Stopwatch timer = new Stopwatch();
             timer.Start();
 
             PriorityQueue queue = new PriorityQueue();
-            queue.make_queue((Int64) Math.Pow(Cities.Length, Cities.Length));
+            queue.make_queue(Cities.Length * Cities.Length * Cities.Length * Cities.Length);
 
             //Here I run the greedy algorithm and use that BSSF result as my starting BSSF
             greedySolveProblem();
@@ -429,7 +431,7 @@ namespace TSP
                             }
                             Console.WriteLine();
                         }*/
-                       // Console.WriteLine(current.Lower_bound);
+                        //Console.WriteLine(current.Lower_bound);
                         //Console.WriteLine();
 
                         //If the lower bound is less than current bssf add to queue for later checking, otherwise ignore
@@ -449,7 +451,7 @@ namespace TSP
                             data.add_city_index(k);
 
                             data.set_priority();
-                            //Console.Out.WriteLine("Set Priority " + data.Priority);
+                            Console.Out.WriteLine("Set Priority " + data.Priority);
                             //I'm not sure this id is necessary but I'll have to see
                             data.Id = id;
 
@@ -492,21 +494,33 @@ namespace TSP
                                 //need to create new state_data object with state data set
                                 state_data data = new state_data();
                                 //I guess depth doesn't matter to be exact so long as it's relative, so I'll keep this first one as 0
-                                data.Depth = 0;
+                                data.Depth = current.Depth + 1;
                                 data.Mb = child;
 
                                 //The last value in the path is the current city
+                                data.Path = current.Path;
                                 data.add_city(Cities[k]);
 
+                                data.City_list = current.City_list;
                                 data.add_city_index(k);
 
                                 data.set_priority();
                                 //Console.Out.WriteLine("Set Priority " + data.Priority);
                                 //I'm not sure this id is necessary but I'll have to see
                                 data.Id = id;
-
-                                queue.insert(data, id);
                                 id++;
+
+                                if (data.City_list.Count < Cities.Length)
+                                {
+                                    queue.insert(data, id);
+                                    
+                                }
+                                else //it's a leaf node and it's less than the current BSSF
+                                {
+                                    bssf = new TSPSolution(data.Path);
+                                    count++;
+                                }
+                                
                             }
 
                         }
@@ -516,6 +530,10 @@ namespace TSP
 
                 }
             }
+
+            results[COST] = costOfBssf().ToString();
+            results[TIME] = timer.Elapsed.ToString();
+            results[COUNT] = count.ToString();
 
             return results;
         }
@@ -1004,7 +1022,7 @@ namespace TSP
             }
 
             //Children are 2j + 1 and 2j + 2 (j is the index), the first element is the root and the last is the end
-            public void make_queue(Int64 num)
+            public void make_queue(int num)
             {
                 nodes = new state_data[num];
                 pointers = new int[num];

@@ -16,3 +16,12 @@ C:\Users\lkjdlkgjs\Desktop\312\TSP\WindowsFormsApplication1\obj\Debug\TSP.csproj
 C:\Users\lkjdlkgjs\Desktop\312\TSP\WindowsFormsApplication1\obj\Debug\TSP.mainform.resources
 C:\Users\lkjdlkgjs\Desktop\312\TSP\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
 C:\Users\lkjdlkgjs\Desktop\312\TSP\WindowsFormsApplication1\obj\Debug\TSP.csproj.GenerateResource.Cache
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe.config
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.pdb
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\TSP.csprojResolveAssemblyReference.cache
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\TSP.mainform.resources
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Jonathan\Desktop\tsp\WindowsFormsApplication1\obj\Debug\TSP.csproj.GenerateResource.Cache
