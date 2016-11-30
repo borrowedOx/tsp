@@ -386,6 +386,15 @@ namespace TSP
             results[COUNT] = "-1";
 
             int count = 0;
+            Console.Out.WriteLine("City costs: ");
+            for (int j = 0; j < Cities.Length; j++)
+            {
+                for (int h = 0; h < Cities.Length; h++)
+                {
+                    Console.Write(Cities[j].costToGetTo(Cities[h]) + ",");
+                }
+                Console.WriteLine();
+            }
 
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -399,7 +408,7 @@ namespace TSP
 
             matrix_and_bound initial_matrix = construct_initial_matrix();
 
-            /*
+            
             for (int j = 0; j < Cities.Length;j++)
             {
                 for (int h = 0; h < Cities.Length; h++)
@@ -407,7 +416,7 @@ namespace TSP
                     Console.Write(initial_matrix.Matrix[j,h] + ",");
                 }
                 Console.WriteLine();
-            }*/
+            }
             Console.WriteLine(initial_matrix.Lower_bound);
             //Console.WriteLine();
 
@@ -422,16 +431,7 @@ namespace TSP
                         //I need to get the lower bound of each reduced matrix and the bound
                         matrix_and_bound current = matrix_reduction(initial_matrix, i, k);
 
-                        /*
-                        for (int j = 0; j < Cities.Length; j++)
-                        {
-                            for (int h = 0; h < Cities.Length; h++)
-                            {
-                                Console.Write(current.Matrix[j, h] + ",");
-                            }
-                            Console.WriteLine();
-                        }*/
-                        //Console.WriteLine(current.Lower_bound);
+                        
                         //Console.WriteLine();
 
                         //If the lower bound is less than current bssf add to queue for later checking, otherwise ignore
@@ -451,7 +451,7 @@ namespace TSP
                             data.add_city_index(k);
 
                             data.set_priority();
-                            //Console.Out.WriteLine("Set Priority " + data.Priority);
+                            Console.Out.WriteLine("bound " + data.Mb.Lower_bound);
                             //I'm not sure this id is necessary but I'll have to see
                             data.Id = id;
 
@@ -462,7 +462,7 @@ namespace TSP
                 }
             }
 
-
+            Console.Out.WriteLine("Queue length Initial " + queue.Length);
             //now run while queue is not empty and timer is less than 60
             while (timer.Elapsed.TotalSeconds < 60 && queue.Length > 0)
             {
@@ -488,6 +488,17 @@ namespace TSP
 
                             //Console.Out.WriteLine("here");
 
+                            //Console.Out.WriteLine("Current depth: " + );
+                            for (int j = 0; j < Cities.Length; j++)
+                            {
+                                for (int h = 0; h < Cities.Length; h++)
+                                {
+                                    Console.Write(child.Matrix[j, h] + ",");
+                                }
+                                Console.WriteLine();
+                            }
+                            Console.WriteLine(child.Lower_bound);
+
                             if (child.Lower_bound < costOfBssf())
                             {
 
@@ -499,7 +510,16 @@ namespace TSP
 
                                 //The last value in the path is the current city
                                 data.Path = current.Path;
+                                data.City_list = current.City_list;
                                 data.add_city(Cities[k]);
+
+                               /* Console.Out.WriteLine("The Current Path and length " + data.City_list.Count);
+                               for (int j = 0; j < data.City_list.Count; j++)
+                                {
+                                    Console.Out.Write(data.City_list[j] + "->");
+                                }
+                                Console.Out.WriteLine();*/
+
 
                                 data.City_list = current.City_list;
                                 data.add_city_index(k);
@@ -521,10 +541,10 @@ namespace TSP
                                 {
                                     Console.Out.WriteLine("Current Lower Bound " + costOfBssf());
                                     Console.Out.WriteLine("Final Lower Bound " + data.Mb.Lower_bound);
-                                    /*for (int j = 0; j < data.City_list.Count; j++)
+                                    for (int j = 0; j < data.City_list.Count; j++)
                                     {
-                                        Console.Out.WriteLine(data.City_list[j]);
-                                    }*/
+                                        Console.Out.Write(data.City_list[j] + "->");
+                                    }
 
                                     
                                     bssf = new TSPSolution(data.Path);
@@ -930,8 +950,8 @@ namespace TSP
             int id;
 
             //These are constants I define to give weight to depth vs breadth
-            int K = 3;
-            int C = 5;
+            int K = 1;
+            int C = 2;
 
             public void add_city_index(int i)
             {
@@ -1033,6 +1053,7 @@ namespace TSP
             int next_open = 0;
             int length = 0;
             bool debug = false;
+            int highest = 0;
 
             public int Length
             {
@@ -1044,6 +1065,19 @@ namespace TSP
                 set
                 {
                     length = value;
+                }
+            }
+
+            public int Highest
+            {
+                get
+                {
+                    return highest;
+                }
+
+                set
+                {
+                    highest = value;
                 }
             }
 
@@ -1105,6 +1139,11 @@ namespace TSP
                 next_open++;
                 if (debug) Console.WriteLine("next open: " + next_open);
                 Length++;
+
+                if (length > Highest)
+                {
+                    highest = length;
+                }
             }
             //This is what makes insertion take log time because the node might bubble up to the top of the tree
             private void bubble_up(int node)
