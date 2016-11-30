@@ -385,19 +385,30 @@ namespace TSP
             results[TIME] = "-1";
             results[COUNT] = "-1";
 
+            int count = 0;
+            Console.Out.WriteLine("City costs: ");
+            for (int j = 0; j < Cities.Length; j++)
+            {
+                for (int h = 0; h < Cities.Length; h++)
+                {
+                    Console.Write(Cities[j].costToGetTo(Cities[h]) + ",");
+                }
+                Console.WriteLine();
+            }
+
             Stopwatch timer = new Stopwatch();
             timer.Start();
 
             PriorityQueue queue = new PriorityQueue();
-            queue.make_queue((Int64) Math.Pow(Cities.Length, Cities.Length));
+            queue.make_queue(Cities.Length * Cities.Length * Cities.Length * Cities.Length);
 
             //Here I run the greedy algorithm and use that BSSF result as my starting BSSF
             greedySolveProblem();
-             //Console.Out.WriteLine("Greedy BSSF: " + costOfBssf());
+            Console.Out.WriteLine("Greedy BSSF: " + costOfBssf());
 
             matrix_and_bound initial_matrix = construct_initial_matrix();
 
-            /*
+            
             for (int j = 0; j < Cities.Length;j++)
             {
                 for (int h = 0; h < Cities.Length; h++)
@@ -405,8 +416,8 @@ namespace TSP
                     Console.Write(initial_matrix.Matrix[j,h] + ",");
                 }
                 Console.WriteLine();
-            }*/
-            //Console.WriteLine(initial_matrix.Lower_bound);
+            }
+            Console.WriteLine(initial_matrix.Lower_bound);
             //Console.WriteLine();
 
 
@@ -420,16 +431,7 @@ namespace TSP
                         //I need to get the lower bound of each reduced matrix and the bound
                         matrix_and_bound current = matrix_reduction(initial_matrix, i, k);
 
-                        /*
-                        for (int j = 0; j < Cities.Length; j++)
-                        {
-                            for (int h = 0; h < Cities.Length; h++)
-                            {
-                                Console.Write(current.Matrix[j, h] + ",");
-                            }
-                            Console.WriteLine();
-                        }*/
-                       // Console.WriteLine(current.Lower_bound);
+                        
                         //Console.WriteLine();
 
                         //If the lower bound is less than current bssf add to queue for later checking, otherwise ignore
@@ -449,7 +451,7 @@ namespace TSP
                             data.add_city_index(k);
 
                             data.set_priority();
-                            //Console.Out.WriteLine("Set Priority " + data.Priority);
+                            Console.Out.WriteLine("bound " + data.Mb.Lower_bound);
                             //I'm not sure this id is necessary but I'll have to see
                             data.Id = id;
 
@@ -460,7 +462,7 @@ namespace TSP
                 }
             }
 
-
+            Console.Out.WriteLine("Queue length Initial " + queue.Length);
             //now run while queue is not empty and timer is less than 60
             while (timer.Elapsed.TotalSeconds < 60 && queue.Length > 0)
             {
@@ -480,11 +482,22 @@ namespace TSP
 
                     for (int k = 0; k < Cities.Length; k++)
                     {
-                        if ((int)current.City_list[current.City_list.Count - 1] != k && !current.City_list.Contains(k))
+                        if (!current.City_list.Contains(k))
                         {
                             matrix_and_bound child = matrix_reduction(current.Mb, (int)current.City_list[current.City_list.Count - 1], k);
 
                             //Console.Out.WriteLine("here");
+
+                            //Console.Out.WriteLine("Current depth: " + );
+                            for (int j = 0; j < Cities.Length; j++)
+                            {
+                                for (int h = 0; h < Cities.Length; h++)
+                                {
+                                    Console.Write(child.Matrix[j, h] + ",");
+                                }
+                                Console.WriteLine();
+                            }
+                            Console.WriteLine(child.Lower_bound);
 
                             if (child.Lower_bound < costOfBssf())
                             {
@@ -492,21 +505,52 @@ namespace TSP
                                 //need to create new state_data object with state data set
                                 state_data data = new state_data();
                                 //I guess depth doesn't matter to be exact so long as it's relative, so I'll keep this first one as 0
-                                data.Depth = 0;
+                                data.Depth = current.Depth + 1;
                                 data.Mb = child;
 
                                 //The last value in the path is the current city
+                                data.Path = current.Path;
+                                data.City_list = current.City_list;
                                 data.add_city(Cities[k]);
 
+                               /* Console.Out.WriteLine("The Current Path and length " + data.City_list.Count);
+                               for (int j = 0; j < data.City_list.Count; j++)
+                                {
+                                    Console.Out.Write(data.City_list[j] + "->");
+                                }
+                                Console.Out.WriteLine();*/
+
+
+                                data.City_list = current.City_list;
                                 data.add_city_index(k);
 
                                 data.set_priority();
                                 //Console.Out.WriteLine("Set Priority " + data.Priority);
                                 //I'm not sure this id is necessary but I'll have to see
                                 data.Id = id;
-
-                                queue.insert(data, id);
                                 id++;
+
+                               // Console.Out.WriteLine("Intermediate Lower Bound " + data.Mb.Lower_bound);
+
+                                if (data.City_list.Count < Cities.Length)
+                                {
+                                    queue.insert(data, id);
+                                    
+                                }
+                                else if (data.Mb.Lower_bound < costOfBssf())//it's a leaf node and it's less than the current BSSF
+                                {
+                                    Console.Out.WriteLine("Current Lower Bound " + costOfBssf());
+                                    Console.Out.WriteLine("Final Lower Bound " + data.Mb.Lower_bound);
+                                    for (int j = 0; j < data.City_list.Count; j++)
+                                    {
+                                        Console.Out.Write(data.City_list[j] + "->");
+                                    }
+
+                                    
+                                    bssf = new TSPSolution(data.Path);
+                                    count++;
+                                }
+                                
                             }
 
                         }
@@ -516,6 +560,10 @@ namespace TSP
 
                 }
             }
+
+            results[COST] = costOfBssf().ToString();
+            results[TIME] = timer.Elapsed.ToString();
+            results[COUNT] = count.ToString();
 
             return results;
         }
@@ -617,82 +665,98 @@ namespace TSP
             double[,] matrix = (double[,])matrix_in.Matrix.Clone();
             //Array.Copy(matrix_in.Matrix, matrix, Cities.Length); 
             double lower_bound = matrix_in.Lower_bound;
-            lower_bound += matrix[from, to];
-            matrix[from, to] = double.PositiveInfinity;
 
-            //set row i and column k to infinity
-            for (int h = 0; h < Cities.Length; h++)
+            if (! double.IsPositiveInfinity(matrix[from, to]))
             {
-                matrix[from, h] = double.PositiveInfinity;
-                matrix[h, to] = double.PositiveInfinity;
+                lower_bound += matrix[from, to];
+                matrix[from, to] = double.PositiveInfinity;
+
+                //set row i and column k to infinity
+                for (int h = 0; h < Cities.Length; h++)
+                {
+                    matrix[from, h] = double.PositiveInfinity;
+                    matrix[h, to] = double.PositiveInfinity;
+                }
+
+                //now need to reduce the matrix again
+                /*
+                 *  Goes through all the rows and reduces them 
+                 */
+                for (int i = 0; i < Cities.Length; i++)
+                {
+                    double lowest = -1;
+                    for (int k = 0; k < Cities.Length; k++)
+                    {
+                        if (!double.IsPositiveInfinity(matrix[i, k]))
+                        {
+                            if (lowest == -1)
+                            {
+                                lowest = matrix[i, k];
+                            }
+                            else if (lowest > matrix[i, k])
+                            {
+                                lowest = matrix[i, k];
+                            }
+                        }
+
+                    }
+                    if (lowest != -1)
+                    {
+                        lower_bound += lowest;
+                        //now subtract each value by the lowest
+                        for (int k = 0; k < Cities.Length; k++)
+                        {
+                            if (!double.IsPositiveInfinity(matrix[i, k]))
+                            {
+                                matrix[i, k] = matrix[i, k] - lowest;
+                            }
+
+                        }
+                    }
+                }
+
+                /*
+                 *  Goes through all the columns and reduces them 
+                 */
+                for (int i = 0; i < Cities.Length; i++)
+                {
+                    double lowest = -1;
+                    for (int k = 0; k < Cities.Length; k++)
+                    {
+                        if (!double.IsPositiveInfinity(matrix[k, i]))
+                        {
+                            if (lowest == -1)
+                            {
+                                lowest = matrix[k, i];
+                            }
+                            else if (lowest > matrix[k, i])
+                            {
+                                lowest = matrix[k, i];
+                            }
+                        }
+
+                    }
+                    if (lowest != -1)
+                    {
+                        lower_bound += lowest;
+                        //now subtract each value by the lowest
+                        for (int k = 0; k < Cities.Length; k++)
+                        {
+                            if (!double.IsPositiveInfinity(matrix[k, i]))
+                            {
+                                matrix[k, i] = matrix[k, i] - lowest;
+                            }
+
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                lower_bound = double.PositiveInfinity;
             }
 
-            //now need to reduce the matrix again
-            /*
-             *  Goes through all the rows and reduces them 
-             */
-            for (int i = 0; i < Cities.Length; i++)
-            {
-                double lowest = -1;
-                for (int k = 0; k < Cities.Length; k++)
-                {
-                    if (!double.IsPositiveInfinity(matrix[i, k]))
-                    {
-                        if (lowest == -1)
-                        {
-                            lowest = matrix[i, k];
-                        }
-                        else if (lowest > matrix[i, k])
-                        {
-                            lowest = matrix[i, k];
-                        }
-                    }
-
-                }
-                lower_bound += lowest;
-                //now subtract each value by the lowest
-                for (int k = 0; k < Cities.Length; k++)
-                {
-                    if (!double.IsPositiveInfinity(matrix[i, k]))
-                    {
-                        matrix[i, k] = matrix[i, k] - lowest;
-                    }
-
-                }
-            }
-
-            /*
-             *  Goes through all the columns and reduces them 
-             */
-            for (int i = 0; i < Cities.Length; i++)
-            {
-                double lowest = -1;
-                for (int k = 0; k < Cities.Length; k++)
-                {
-                    if (!double.IsPositiveInfinity(matrix[k, i]))
-                    {
-                        if (lowest == -1)
-                        {
-                            lowest = matrix[k, i];
-                        }
-                        else if (lowest > matrix[k, i])
-                        {
-                            lowest = matrix[k, i];
-                        }
-                    }
-
-                }
-                lower_bound += lowest;
-                //now subtract each value by the lowest
-                for (int k = 0; k < Cities.Length; k++)
-                {
-                    if (!double.IsPositiveInfinity(matrix[k, i]))
-                    {
-                        matrix[k, i] = matrix[k, i] - lowest;
-                    }
-
-                }
-            }
 
 
             return new matrix_and_bound(matrix, lower_bound);
@@ -886,8 +950,8 @@ namespace TSP
             int id;
 
             //These are constants I define to give weight to depth vs breadth
-            int K = 3;
-            int C = 5;
+            int K = 1;
+            int C = 2;
 
             public void add_city_index(int i)
             {
@@ -989,6 +1053,7 @@ namespace TSP
             int next_open = 0;
             int length = 0;
             bool debug = false;
+            int highest = 0;
 
             public int Length
             {
@@ -1003,8 +1068,21 @@ namespace TSP
                 }
             }
 
+            public int Highest
+            {
+                get
+                {
+                    return highest;
+                }
+
+                set
+                {
+                    highest = value;
+                }
+            }
+
             //Children are 2j + 1 and 2j + 2 (j is the index), the first element is the root and the last is the end
-            public void make_queue(Int64 num)
+            public void make_queue(int num)
             {
                 nodes = new state_data[num];
                 pointers = new int[num];
@@ -1061,6 +1139,11 @@ namespace TSP
                 next_open++;
                 if (debug) Console.WriteLine("next open: " + next_open);
                 Length++;
+
+                if (length > Highest)
+                {
+                    highest = length;
+                }
             }
             //This is what makes insertion take log time because the node might bubble up to the top of the tree
             private void bubble_up(int node)
